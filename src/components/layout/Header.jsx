@@ -88,6 +88,25 @@ export default function Header() {
           justify-content: center;
           font-weight: bold;
         }
+
+        @media (max-width: 768px) {
+          .header {
+            margin-bottom: 24px;
+            gap: 12px;
+          }
+          .greeting {
+            font-size: 1.2rem;
+          }
+          .date {
+            font-size: 0.8rem;
+          }
+          .user-badge {
+            padding: 4px;
+          }
+          .user-badge span {
+            display: none;
+          }
+        }
       `}</style>
     </header>
   );

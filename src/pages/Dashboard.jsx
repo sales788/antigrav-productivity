@@ -23,9 +23,29 @@ export default function Dashboard() {
         </div>
       </div>
       <style>{`
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .dashboard-col-left, .dashboard-col-right { display: flex; flex-direction: column; gap: 20px; }
-        @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .dashboard-grid { 
+          display: grid; 
+          grid-template-columns: 1fr 1fr; 
+          gap: 24px; 
+        }
+        .dashboard-col-left, .dashboard-col-right { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 24px; 
+        }
+        @media (max-width: 1024px) { 
+          .dashboard-grid { 
+            grid-template-columns: 1fr; 
+          } 
+        }
+        @media (max-width: 768px) {
+          .dashboard-grid {
+            gap: 16px;
+          }
+          .dashboard-col-left, .dashboard-col-right {
+            gap: 16px;
+          }
+        }
       `}</style>
     </div>
   );

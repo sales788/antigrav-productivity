@@ -125,6 +125,48 @@ export default function Sidebar() {
         .logout-btn:hover {
           background: rgba(255, 75, 92, 0.1);
         }
+
+        @media (max-width: 768px) {
+          .sidebar {
+            width: 100%;
+            height: auto;
+            position: fixed;
+            bottom: 0;
+            top: auto;
+            left: 0;
+            flex-direction: row;
+            padding: 12px 16px;
+            z-index: 1000;
+            border-right: none;
+            border-top: 1px solid var(--border-color);
+            background: rgba(26, 26, 46, 0.95);
+          }
+          .sidebar-logo {
+            display: none;
+          }
+          .sidebar-nav {
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+          }
+          .nav-item {
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+            font-size: 0.7rem;
+            flex: 1;
+            text-align: center;
+          }
+          .nav-icon {
+            font-size: 1.4rem;
+          }
+          .nav-label {
+            display: block;
+          }
+          .sidebar-footer {
+            display: none; /* Hide logout on mobile nav, move it to settings? */
+          }
+        }
       `}</style>
     </aside>
   );
