@@ -37,7 +37,7 @@ export default function Sidebar() {
 
       <div className="sidebar-footer">
         <button className="logout-btn" onClick={() => signOut()}>
-          <span>🚪</span> {t('auth.logout')}
+          <span>🚪</span> {t('auth.signOut')}
         </button>
       </div>
 

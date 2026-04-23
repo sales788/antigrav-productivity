@@ -9,10 +9,10 @@ export default function Header() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 6) return t('common.goodNight');
-    if (hour < 12) return t('common.goodMorning');
-    if (hour < 18) return t('common.goodAfternoon');
-    return t('common.goodEvening');
+    if (hour < 6) return t('dashboard.greeting.night');
+    if (hour < 12) return t('dashboard.greeting.morning');
+    if (hour < 18) return t('dashboard.greeting.afternoon');
+    return t('dashboard.greeting.evening');
   };
 
   return (
