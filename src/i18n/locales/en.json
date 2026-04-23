@@ -1,0 +1,133 @@
+{
+  "app": {
+    "name": "Antigrav",
+    "tagline": "Your Productivity Dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "habits": "Habits",
+    "tasks": "Tasks",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "name": "Display Name",
+    "loginSubtitle": "Welcome back! Sign in to continue",
+    "registerSubtitle": "Create your account to get started",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signOut": "Sign Out"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Here's your productivity overview",
+    "greeting": {
+      "morning": "Good Morning",
+      "afternoon": "Good Afternoon",
+      "evening": "Good Evening",
+      "night": "Good Night"
+    }
+  },
+  "habits": {
+    "title": "Habits",
+    "subtitle": "Track your daily routines",
+    "add": "Add Habit",
+    "edit": "Edit Habit",
+    "delete": "Delete Habit",
+    "name": "Habit Name",
+    "category": "Category",
+    "frequency": "Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "streak": "Streak",
+    "completed": "Completed",
+    "noHabits": "No habits yet. Add your first habit!",
+    "categories": {
+      "health": "Health",
+      "fitness": "Fitness",
+      "education": "Education",
+      "work": "Work",
+      "mindfulness": "Mindfulness",
+      "social": "Social",
+      "creativity": "Creativity",
+      "other": "Other"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "subtitle": "Manage your tasks and projects",
+    "add": "Add Task",
+    "edit": "Edit Task",
+    "delete": "Delete Task",
+    "name": "Task Name",
+    "description": "Description",
+    "priority": "Priority",
+    "deadline": "Deadline",
+    "project": "Project",
+    "subtask": "Subtask",
+    "addSubtask": "Add Subtask",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "completed": "Completed",
+    "pending": "Pending",
+    "overdue": "Overdue",
+    "noTasks": "No tasks yet. Add your first task!",
+    "noProjects": "No projects yet"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Visualize your progress",
+    "habitCompletion": "Habit Completion",
+    "taskProgress": "Task Progress",
+    "weeklyOverview": "Weekly Overview",
+    "monthlyOverview": "Monthly Overview",
+    "completionRate": "Completion Rate",
+    "totalCompleted": "Total Completed",
+    "currentStreak": "Current Streak",
+    "bestStreak": "Best Streak",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year"
+  },
+  "ai": {
+    "title": "AI Recommendations",
+    "subtitle": "Personalized productivity insights",
+    "generate": "Get Recommendations",
+    "loading": "Analyzing your data...",
+    "error": "Failed to generate recommendations",
+    "noData": "Complete some habits and tasks to get personalized recommendations"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your experience",
+    "theme": "Theme",
+    "language": "Language",
+    "dark": "Dark",
+    "light": "Light",
+    "profile": "Profile",
+    "save": "Save Changes",
+    "saved": "Settings saved!"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success!",
+    "confirm": "Are you sure?",
+    "days": "days",
+    "today": "Today"
+  }
+}
