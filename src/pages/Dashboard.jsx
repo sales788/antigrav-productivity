@@ -9,8 +9,10 @@ export default function Dashboard() {
   const { t } = useTranslation();
   return (
     <div className="dashboard-page">
-      <h1 className="page-title">{t('dashboard.title')}</h1>
-      <p className="page-subtitle">{t('dashboard.subtitle')}</p>
+      <div className="page-header desktop-only">
+        <h1 className="page-title">{t('dashboard.title')}</h1>
+        <p className="page-subtitle">{t('dashboard.subtitle')}</p>
+      </div>
       <div className="dashboard-grid">
         <div className="dashboard-col-left">
           <ClockWidget />
