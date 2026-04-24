@@ -13,7 +13,16 @@ export default function TaskManager({ compact = false }) {
   const { tasks, projects, loading, addTask, deleteTask, toggleTask, getSubtasks } = useTasks();
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
+
+  const getDate = (view) => {
+    const d = new Date();
+    if (view === 'tomorrow') d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const targetDate = getDate(viewDate);
 
   const handleAdd = () => {
     if (!newTask.title.trim()) return;
@@ -26,12 +35,18 @@ export default function TaskManager({ compact = false }) {
 
   const rootTasks = tasks.filter(t => !t.parent_task_id);
   let filteredTasks = rootTasks;
-  if (filter === 'pending') filteredTasks = rootTasks.filter(t => !t.is_completed);
-  if (filter === 'completed') filteredTasks = rootTasks.filter(t => t.is_completed);
-  if (filter === 'overdue') filteredTasks = rootTasks.filter(t => !t.is_completed && t.deadline && new Date(t.deadline) < new Date());
+
+  if (compact) {
+    filteredTasks = rootTasks.filter(t => t.deadline === targetDate);
+  } else {
+    if (filter === 'pending') filteredTasks = rootTasks.filter(t => !t.is_completed);
+    if (filter === 'completed') filteredTasks = rootTasks.filter(t => t.is_completed);
+    if (filter === 'overdue') filteredTasks = rootTasks.filter(t => !t.is_completed && t.deadline && new Date(t.deadline) < new Date());
+  }
 
   const displayTasks = compact ? filteredTasks.slice(0, 5) : filteredTasks;
-  const completedCount = tasks.filter(t => t.is_completed).length;
+  const totalCount = compact ? filteredTasks.length : tasks.length;
+  const completedCount = compact ? filteredTasks.filter(t => t.is_completed).length : tasks.filter(t => t.is_completed).length;
 
   const isOverdue = (deadline) => deadline && new Date(deadline) < new Date();
   const formatDeadline = (d) => {
@@ -49,9 +64,21 @@ export default function TaskManager({ compact = false }) {
       <div className="card-title">
         <span className="icon">✅</span>
         {t('tasks.title')}
-        <span className="task-count-badge">{completedCount}/{tasks.length}</span>
+        <span className="task-count-badge">{completedCount}/{totalCount}</span>
         <button className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
       </div>
+
+      {/* Date Toggle for Dashboard */}
+      {compact && (
+        <div className="task-date-toggle">
+          <button className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
+            {t('common.today')}
+          </button>
+          <button className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
+            {t('tomorrow')}
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       {!compact && (
@@ -134,6 +161,31 @@ export default function TaskManager({ compact = false }) {
           border-radius: var(--radius-full);
           font-weight: 700;
           font-family: var(--font-mono);
+        }
+        .task-date-toggle {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 16px;
+          background: var(--bg-input);
+          padding: 4px;
+          border-radius: var(--radius-md);
+        }
+        .date-btn {
+          flex: 1;
+          padding: 6px;
+          border: none;
+          background: none;
+          color: var(--text-secondary);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          font-size: 0.8rem;
+          font-weight: 600;
+          transition: all var(--transition-fast);
+        }
+        .date-btn.active {
+          background: var(--bg-card);
+          color: var(--primary-color);
+          box-shadow: var(--shadow-sm);
         }
         .task-add-form {
           display: flex; flex-direction: column; gap: 8px;

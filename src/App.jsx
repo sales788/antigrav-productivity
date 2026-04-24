@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext.jsx';
 import Layout from './components/layout/Layout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Planning from './pages/Planning.jsx';
 import Habits from './pages/Habits.jsx';
 import Tasks from './pages/Tasks.jsx';
 import Analytics from './pages/Analytics.jsx';
@@ -31,6 +32,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
+        <Route path="planning" element={<Planning />} />
         <Route path="habits" element={<Habits />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="analytics" element={<Analytics />} />

@@ -3,10 +3,10 @@ import { supabase, isDemoMode } from '../lib/supabase.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
 const DEMO_HABITS = [
-  { id: '1', title: 'Morning Meditation', category: 'mindfulness', frequency: 'daily', color: '#6c63ff', streak: 7, created_at: new Date().toISOString() },
-  { id: '2', title: 'Exercise', category: 'fitness', frequency: 'daily', color: '#00d4aa', streak: 12, created_at: new Date().toISOString() },
-  { id: '3', title: 'Read 30 min', category: 'education', frequency: 'daily', color: '#ffa726', streak: 5, created_at: new Date().toISOString() },
-  { id: '4', title: 'Drink 8 glasses of water', category: 'health', frequency: 'daily', color: '#4ecdc4', streak: 3, created_at: new Date().toISOString() },
+  { id: '1', title: 'Morning Meditation', category: 'mindfulness', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6], color: '#6c63ff', streak: 7, created_at: new Date().toISOString() },
+  { id: '2', title: 'Exercise', category: 'fitness', frequency: 'weekly', days_of_week: [1,3,5], color: '#00d4aa', streak: 12, created_at: new Date().toISOString() },
+  { id: '3', title: 'Read 30 min', category: 'education', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6], color: '#ffa726', streak: 5, created_at: new Date().toISOString() },
+  { id: '4', title: 'Drink 8 glasses of water', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6], color: '#4ecdc4', streak: 3, created_at: new Date().toISOString() },
 ];
 
 export function useHabits() {

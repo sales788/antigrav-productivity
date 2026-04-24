@@ -8,6 +8,7 @@
     "habits": "Habits",
     "tasks": "Tasks",
     "analytics": "Analytics",
+    "planning": "Planning",
     "settings": "Settings"
   },
   "auth": {
@@ -128,6 +129,11 @@
     "success": "Success!",
     "confirm": "Are you sure?",
     "days": "days",
-    "today": "Today"
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "planning": "Planning",
+    "daysShort": {
+      "mon": "M", "tue": "T", "wed": "W", "thu": "T", "fri": "F", "sat": "S", "sun": "S"
+    }
   }
 }

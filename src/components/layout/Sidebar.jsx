@@ -9,6 +9,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { path: '/', icon: '📊', label: t('dashboard.title') },
+    { path: '/planning', icon: '🗓️', label: t('nav.planning') },
     { path: '/habits', icon: '🔁', label: t('habits.title') },
     { path: '/tasks', icon: '✅', label: t('tasks.title') },
     { path: '/analytics', icon: '📈', label: t('analytics.title') },

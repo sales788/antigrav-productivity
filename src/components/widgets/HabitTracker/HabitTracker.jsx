@@ -16,22 +16,55 @@ export default function HabitTracker({ compact = false }) {
   const { t } = useTranslation();
   const { habits, loading, addHabit, deleteHabit, toggleHabitLog, isHabitCompleted } = useHabits();
   const [showAdd, setShowAdd] = useState(false);
-  const [newHabit, setNewHabit] = useState({ title: '', category: 'health', frequency: 'daily' });
+  const [newHabit, setNewHabit] = useState({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
+  const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
 
-  const today = new Date().toISOString().split('T')[0];
-  const completedToday = habits.filter(h => isHabitCompleted(h.id, today)).length;
-  const completionRate = habits.length > 0 ? Math.round((completedToday / habits.length) * 100) : 0;
+  const getDate = (view) => {
+    const d = new Date();
+    if (view === 'tomorrow') d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const getDayOfWeek = (view) => {
+    const d = new Date();
+    if (view === 'tomorrow') d.setDate(d.getDate() + 1);
+    return d.getDay();
+  };
+
+  const targetDate = getDate(viewDate);
+  const targetDay = getDayOfWeek(viewDate);
+
+  const filteredHabits = habits.filter(h => {
+    if (!h.days_of_week) return true; // Default to all days if not specified
+    return h.days_of_week.includes(targetDay);
+  });
+
+  const completedCount = filteredHabits.filter(h => isHabitCompleted(h.id, targetDate)).length;
+  const completionRate = filteredHabits.length > 0 ? Math.round((completedCount / filteredHabits.length) * 100) : 0;
 
   const handleAdd = () => {
     if (!newHabit.title.trim()) return;
     addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
-    setNewHabit({ title: '', category: 'health', frequency: 'daily' });
+    setNewHabit({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
     setShowAdd(false);
+  };
+
+  const toggleDay = (day) => {
+    const current = newHabit.days_of_week || [];
+    if (current.includes(day)) {
+      setNewHabit({ ...newHabit, days_of_week: current.filter(d => d !== day) });
+    } else {
+      setNewHabit({ ...newHabit, days_of_week: [...current, day].sort() });
+    }
   };
 
   if (loading) return <div className="card skeleton" style={{ height: 200 }} />;
 
-  const displayHabits = compact ? habits.slice(0, 5) : habits;
+  const displayHabits = compact ? filteredHabits.slice(0, 5) : filteredHabits;
+  const days = [
+    { id: 1, label: 'mon' }, { id: 2, label: 'tue' }, { id: 3, label: 'wed' },
+    { id: 4, label: 'thu' }, { id: 5, label: 'fri' }, { id: 6, label: 'sat' }, { id: 0, label: 'sun' }
+  ];
 
   return (
     <div className="habit-tracker card animate-fadeInUp">
@@ -42,11 +75,23 @@ export default function HabitTracker({ compact = false }) {
         <button className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
       </div>
 
+      {/* Date Toggle for Dashboard */}
+      {compact && (
+        <div className="habit-date-toggle">
+          <button className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
+            {t('common.today')}
+          </button>
+          <button className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
+            {t('tomorrow')}
+          </button>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="habit-progress-bar">
         <div className="habit-progress-fill" style={{ width: `${completionRate}%` }} />
       </div>
-      <div className="habit-progress-label">{completedToday}/{habits.length} {t('common.today')}</div>
+      <div className="habit-progress-label">{completedCount}/{filteredHabits.length} {viewDate === 'today' ? t('common.today') : t('tomorrow')}</div>
 
       {/* Add form */}
       {showAdd && (
@@ -54,19 +99,23 @@ export default function HabitTracker({ compact = false }) {
           <input className="input" placeholder={t('habits.name')} value={newHabit.title}
             onChange={e => setNewHabit({ ...newHabit, title: e.target.value })}
             onKeyDown={e => e.key === 'Enter' && handleAdd()} />
+          
+          <div className="day-selector">
+            {days.map(day => (
+              <button key={day.id} 
+                className={`day-btn ${newHabit.days_of_week.includes(day.id) ? 'active' : ''}`}
+                onClick={() => toggleDay(day.id)}>
+                {t(`daysShort.${day.label}`)}
+              </button>
+            ))}
+          </div>
+
           <div className="habit-add-row">
             <select className="input select" value={newHabit.category}
               onChange={e => setNewHabit({ ...newHabit, category: e.target.value })}>
               {Object.keys(CATEGORY_EMOJIS).map(cat => (
                 <option key={cat} value={cat}>{CATEGORY_EMOJIS[cat]} {t(`habits.categories.${cat}`)}</option>
               ))}
-            </select>
-            <select className="input select" value={newHabit.frequency}
-              onChange={e => setNewHabit({ ...newHabit, frequency: e.target.value })}>
-              <option value="daily">{t('habits.daily')}</option>
-              <option value="weekly">{t('habits.weekly')}</option>
-              <option value="monthly">{t('habits.monthly')}</option>
-              <option value="yearly">{t('habits.yearly')}</option>
             </select>
             <button className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
           </div>
@@ -79,10 +128,10 @@ export default function HabitTracker({ compact = false }) {
           <div className="empty-state"><span className="icon">🎯</span><p>{t('habits.noHabits')}</p></div>
         )}
         {displayHabits.map(habit => {
-          const completed = isHabitCompleted(habit.id, today);
+          const completed = isHabitCompleted(habit.id, targetDate);
           return (
             <div key={habit.id} className={`habit-item ${completed ? 'completed' : ''}`}>
-              <div className="checkbox-wrapper" onClick={() => toggleHabitLog(habit.id, today)}>
+              <div className="checkbox-wrapper" onClick={() => toggleHabitLog(habit.id, targetDate)}>
                 <div className={`checkbox ${completed ? 'checked' : ''}`} style={{ borderColor: completed ? habit.color : undefined, background: completed ? habit.color : undefined }} />
               </div>
               <div className="habit-info">
@@ -90,7 +139,7 @@ export default function HabitTracker({ compact = false }) {
                   {CATEGORY_EMOJIS[habit.category]} {habit.title}
                 </span>
                 <span className="habit-meta">
-                  {t(`habits.${habit.frequency}`)} · 🔥 {habit.streak || 0} {t('common.days')}
+                  {habit.days_of_week && habit.days_of_week.length === 7 ? t('habits.daily') : t('habits.weekly')} · 🔥 {habit.streak || 0} {t('common.days')}
                 </span>
               </div>
               {!compact && (
@@ -129,6 +178,61 @@ export default function HabitTracker({ compact = false }) {
           color: var(--text-tertiary);
           margin-bottom: 16px;
           font-family: var(--font-mono);
+        }
+        .habit-date-toggle {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 16px;
+          background: var(--bg-input);
+          padding: 4px;
+          border-radius: var(--radius-md);
+        }
+        .date-btn {
+          flex: 1;
+          padding: 6px;
+          border: none;
+          background: none;
+          color: var(--text-secondary);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          font-size: 0.8rem;
+          font-weight: 600;
+          transition: all var(--transition-fast);
+        }
+        .date-btn.active {
+          background: var(--bg-card);
+          color: var(--primary-color);
+          box-shadow: var(--shadow-sm);
+        }
+        .day-selector {
+          display: flex;
+          justify-content: space-between;
+          gap: 4px;
+          margin-bottom: 8px;
+        }
+        .day-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 1px solid var(--border-color);
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .day-btn:hover {
+          border-color: var(--primary-color);
+          color: var(--primary-color);
+        }
+        .day-btn.active {
+          background: var(--primary-color);
+          color: white;
+          border-color: var(--primary-color);
         }
         .habit-add-form {
           display: flex;
