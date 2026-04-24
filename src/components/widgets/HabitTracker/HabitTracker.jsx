@@ -17,6 +17,7 @@ export default function HabitTracker({ compact = false }) {
   const { habits, loading, addHabit, deleteHabit, toggleHabitLog, isHabitCompleted } = useHabits();
   const [showAdd, setShowAdd] = useState(false);
   const [newHabit, setNewHabit] = useState({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
+  const [submitting, setSubmitting] = useState(false);
   const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
 
   const getDate = (view) => {
@@ -34,23 +35,32 @@ export default function HabitTracker({ compact = false }) {
   const targetDate = getDate(viewDate);
   const targetDay = getDayOfWeek(viewDate);
 
-  const filteredHabits = habits.filter(h => {
+  const filteredHabits = (habits || []).filter(h => {
+    if (!h) return false;
     if (!h.days_of_week) return true; // Default to all days if not specified
     return h.days_of_week.includes(targetDay);
   });
 
-  const completedCount = filteredHabits.filter(h => isHabitCompleted(h.id, targetDate)).length;
+  const completedCount = filteredHabits.filter(h => h && isHabitCompleted(h.id, targetDate)).length;
   const completionRate = filteredHabits.length > 0 ? Math.round((completedCount / filteredHabits.length) * 100) : 0;
 
   const handleAdd = async (e) => {
-    if (e) e.preventDefault();
-    if (!newHabit.title.trim()) return;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!newHabit.title.trim() || submitting) return;
+    
+    setSubmitting(true);
     try {
       await addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
       setNewHabit({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
       setShowAdd(false);
-    } catch (e) {
-      console.error('Failed to add habit:', e);
+    } catch (err) {
+      console.error('Failed to add habit:', err);
+      alert(t('common.error') || 'Failed to add habit');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -88,7 +98,7 @@ export default function HabitTracker({ compact = false }) {
             {t('common.today')}
           </button>
           <button type="button" className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
-            {t('tomorrow')}
+            {t('common.tomorrow')}
           </button>
         </div>
       )}
@@ -97,19 +107,24 @@ export default function HabitTracker({ compact = false }) {
       <div className="habit-progress-bar">
         <div className="habit-progress-fill" style={{ width: `${completionRate}%` }} />
       </div>
-      <div className="habit-progress-label">{completedCount}/{filteredHabits.length} {viewDate === 'today' ? t('common.today') : t('tomorrow')}</div>
+      <div className="habit-progress-label">{completedCount}/{filteredHabits.length} {viewDate === 'today' ? t('common.today') : t('common.tomorrow')}</div>
 
       {/* Add form */}
       {showAdd && (
-        <div className="habit-add-form animate-slideUp">
-          <input className="input" placeholder={t('habits.name')} value={newHabit.title}
+        <form className="habit-add-form animate-slideUp" onSubmit={handleAdd}>
+          <input 
+            className="input" 
+            placeholder={t('habits.name')} 
+            value={newHabit.title}
+            disabled={submitting}
             onChange={e => setNewHabit({ ...newHabit, title: e.target.value })}
-            onKeyDown={e => e.key === 'Enter' && handleAdd(e)} />
+          />
           
           <div className="day-selector">
             {days.map(day => (
               <button key={day.id} 
                 type="button"
+                disabled={submitting}
                 className={`day-btn ${newHabit.days_of_week.includes(day.id) ? 'active' : ''}`}
                 onClick={(e) => toggleDay(day.id, e)}>
                 {t(`daysShort.${day.label}`).charAt(0)}
@@ -119,14 +134,17 @@ export default function HabitTracker({ compact = false }) {
 
           <div className="habit-add-row">
             <select className="input select" value={newHabit.category}
+              disabled={submitting}
               onChange={e => setNewHabit({ ...newHabit, category: e.target.value })}>
               {Object.keys(CATEGORY_EMOJIS).map(cat => (
                 <option key={cat} value={cat}>{CATEGORY_EMOJIS[cat]} {t(`habits.categories.${cat}`)}</option>
               ))}
             </select>
-            <button type="button" className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || !newHabit.title.trim()}>
+              {submitting ? '...' : t('common.add')}
+            </button>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Habits list */}

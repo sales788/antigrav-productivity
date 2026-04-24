@@ -14,6 +14,7 @@ export default function TaskManager({ compact = false }) {
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState('all');
   const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
+  const [submitting, setSubmitting] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
 
   const getDate = (view) => {
@@ -25,39 +26,50 @@ export default function TaskManager({ compact = false }) {
   const targetDate = getDate(viewDate);
 
   const handleAdd = async (e) => {
-    if (e) e.preventDefault();
-    if (!newTask.title.trim()) return;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!newTask.title.trim() || submitting) return;
+    
+    setSubmitting(true);
     try {
       await addTask({ ...newTask, parent_task_id: null });
       setNewTask({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
       setShowAdd(false);
-    } catch (e) {
-      console.error('Failed to add task:', e);
+    } catch (err) {
+      console.error('Failed to add task:', err);
+      alert(t('common.error') || 'Failed to add task');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   if (loading) return <div className="card skeleton" style={{ height: 200 }} />;
 
-  const rootTasks = tasks.filter(t => !t.parent_task_id);
+  const allTasks = tasks || [];
+  const rootTasks = allTasks.filter(t => t && !t.parent_task_id);
   let filteredTasks = rootTasks;
 
   if (compact) {
-    filteredTasks = rootTasks.filter(t => t.deadline === targetDate);
+    filteredTasks = rootTasks.filter(t => t && t.deadline === targetDate);
   } else {
-    if (filter === 'pending') filteredTasks = rootTasks.filter(t => !t.is_completed);
-    if (filter === 'completed') filteredTasks = rootTasks.filter(t => t.is_completed);
-    if (filter === 'overdue') filteredTasks = rootTasks.filter(t => !t.is_completed && t.deadline && new Date(t.deadline) < new Date());
+    if (filter === 'pending') filteredTasks = rootTasks.filter(t => t && !t.is_completed);
+    if (filter === 'completed') filteredTasks = rootTasks.filter(t => t && t.is_completed);
+    if (filter === 'overdue') filteredTasks = rootTasks.filter(t => t && !t.is_completed && t.deadline && new Date(t.deadline) < new Date());
   }
 
   const displayTasks = compact ? filteredTasks.slice(0, 5) : filteredTasks;
-  const totalCount = compact ? filteredTasks.length : tasks.length;
-  const completedCount = compact ? filteredTasks.filter(t => t.is_completed).length : tasks.filter(t => t.is_completed).length;
+  const totalCount = compact ? filteredTasks.length : allTasks.length;
+  const completedCount = compact ? filteredTasks.filter(t => t && t.is_completed).length : allTasks.filter(t => t && t.is_completed).length;
 
   const isOverdue = (deadline) => deadline && new Date(deadline) < new Date();
   const formatDeadline = (d) => {
     if (!d) return '';
     const date = new Date(d);
-    const diff = Math.ceil((date - new Date()) / 86400000);
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const diff = Math.ceil((date - now) / 86400000);
     if (diff === 0) return t('common.today');
     if (diff === 1) return '1d';
     if (diff < 0) return `${Math.abs(diff)}d ${t('tasks.overdue').toLowerCase()}`;
@@ -80,7 +92,7 @@ export default function TaskManager({ compact = false }) {
             {t('common.today')}
           </button>
           <button type="button" className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
-            {t('tomorrow')}
+            {t('common.tomorrow')}
           </button>
         </div>
       )}
@@ -99,22 +111,27 @@ export default function TaskManager({ compact = false }) {
 
       {/* Add form */}
       {showAdd && (
-        <div className="task-add-form animate-slideUp">
+        <form className="task-add-form animate-slideUp" onSubmit={handleAdd}>
           <input className="input" placeholder={t('tasks.name')} value={newTask.title}
+            disabled={submitting}
             onChange={e => setNewTask({ ...newTask, title: e.target.value })}
-            onKeyDown={e => e.key === 'Enter' && handleAdd(e)} />
+          />
           <div className="task-add-row">
             <select className="input select" value={newTask.priority}
+              disabled={submitting}
               onChange={e => setNewTask({ ...newTask, priority: e.target.value })}>
               {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
                 <option key={key} value={key}>{cfg.icon} {t(cfg.label)}</option>
               ))}
             </select>
             <input className="input" type="date" value={newTask.deadline}
+              disabled={submitting}
               onChange={e => setNewTask({ ...newTask, deadline: e.target.value })} />
-            <button type="button" className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || !newTask.title.trim()}>
+              {submitting ? '...' : t('common.add')}
+            </button>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Tasks list */}

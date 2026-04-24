@@ -43,14 +43,25 @@ export function useHabits() {
   }, [habits, habitLogs, user]);
 
   const addHabit = async (habit) => {
-    const newHabit = { ...habit, id: crypto.randomUUID(), streak: 0, created_at: new Date().toISOString() };
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+    const newHabit = { ...habit, id, streak: 0, created_at: new Date().toISOString() };
+    
     if (isDemoMode || !user) {
       setHabits(prev => [...prev, newHabit]);
       return newHabit;
     }
-    const { data } = await supabase.from('habits').insert({ ...habit, user_id: user.id }).select().single();
-    setHabits(prev => [...prev, data]);
-    return data;
+    
+    try {
+      const { data, error } = await supabase.from('habits').insert({ ...habit, user_id: user.id }).select().single();
+      if (error) throw error;
+      if (data) {
+        setHabits(prev => [...prev, data]);
+        return data;
+      }
+    } catch (err) {
+      console.error('Error adding habit:', err);
+      throw err;
+    }
   };
 
   const updateHabit = async (id, updates) => {
@@ -58,8 +69,11 @@ export function useHabits() {
       setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
       return;
     }
-    await supabase.from('habits').update(updates).eq('id', id);
-    setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+    try {
+      const { error } = await supabase.from('habits').update(updates).eq('id', id);
+      if (error) throw error;
+      setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+    } catch (err) { console.error(err); }
   };
 
   const deleteHabit = async (id) => {
@@ -67,38 +81,47 @@ export function useHabits() {
       setHabits(prev => prev.filter(h => h.id !== id));
       return;
     }
-    await supabase.from('habits').delete().eq('id', id);
-    setHabits(prev => prev.filter(h => h.id !== id));
+    try {
+      const { error } = await supabase.from('habits').delete().eq('id', id);
+      if (error) throw error;
+      setHabits(prev => prev.filter(h => h.id !== id));
+    } catch (err) { console.error(err); }
   };
 
-  const toggleHabitLog = async (habitId, date) => {
+  const toggleDayLog = async (habitId, date) => {
     const dateStr = date || new Date().toISOString().split('T')[0];
     const existing = habitLogs.find(l => l.habit_id === habitId && l.completed_at?.startsWith(dateStr));
     
     if (existing) {
       if (isDemoMode || !user) {
-        const updated = habitLogs.filter(l => l.id !== existing.id);
-        setHabitLogs(updated);
+        setHabitLogs(prev => prev.filter(l => l.id !== existing.id));
         return;
       }
-      await supabase.from('habit_logs').delete().eq('id', existing.id);
-      setHabitLogs(prev => prev.filter(l => l.id !== existing.id));
+      try {
+        const { error } = await supabase.from('habit_logs').delete().eq('id', existing.id);
+        if (error) throw error;
+        setHabitLogs(prev => prev.filter(l => l.id !== existing.id));
+      } catch (err) { console.error(err); }
     } else {
-      const newLog = { id: crypto.randomUUID(), habit_id: habitId, completed_at: dateStr + 'T00:00:00' };
+      const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+      const newLog = { id, habit_id: habitId, completed_at: dateStr + 'T00:00:00' };
       if (isDemoMode || !user) {
-        const updated = [...habitLogs, newLog];
-        setHabitLogs(updated);
+        setHabitLogs(prev => [...prev, newLog]);
         return;
       }
-      const { data } = await supabase.from('habit_logs').insert({ habit_id: habitId, completed_at: dateStr }).select().single();
-      setHabitLogs(prev => [...prev, data]);
+      try {
+        const { data, error } = await supabase.from('habit_logs').insert({ habit_id: habitId, completed_at: dateStr }).select().single();
+        if (error) throw error;
+        if (data) setHabitLogs(prev => [...prev, data]);
+      } catch (err) { console.error(err); }
     }
   };
 
   const isHabitCompleted = (habitId, date) => {
+    if (!habitLogs) return false;
     const dateStr = date || new Date().toISOString().split('T')[0];
-    return habitLogs.some(l => l.habit_id === habitId && l.completed_at?.startsWith(dateStr));
+    return habitLogs.some(l => l && l.habit_id === habitId && l.completed_at?.startsWith(dateStr));
   };
 
-  return { habits, habitLogs, loading, addHabit, updateHabit, deleteHabit, toggleHabitLog, isHabitCompleted, refetch: fetchHabits };
+  return { habits: habits || [], habitLogs: habitLogs || [], loading, addHabit, updateHabit, deleteHabit, toggleHabitLog: toggleDayLog, isHabitCompleted, refetch: fetchHabits };
 }

@@ -47,14 +47,23 @@ export function useTasks() {
   }, [tasks, projects, user]);
 
   const addTask = async (task) => {
-    const newTask = { ...task, id: crypto.randomUUID(), is_completed: false, created_at: new Date().toISOString() };
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+    const newTask = { ...task, id, is_completed: false, created_at: new Date().toISOString() };
     if (isDemoMode || !user) {
       setTasks(prev => [...prev, newTask]);
       return newTask;
     }
-    const { data } = await supabase.from('tasks').insert({ ...task, user_id: user.id }).select().single();
-    setTasks(prev => [...prev, data]);
-    return data;
+    try {
+      const { data, error } = await supabase.from('tasks').insert({ ...task, user_id: user.id }).select().single();
+      if (error) throw error;
+      if (data) {
+        setTasks(prev => [...prev, data]);
+        return data;
+      }
+    } catch (err) {
+      console.error('Error adding task:', err);
+      throw err;
+    }
   };
 
   const updateTask = async (id, updates) => {
@@ -62,18 +71,23 @@ export function useTasks() {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
       return;
     }
-    await supabase.from('tasks').update(updates).eq('id', id);
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    try {
+      const { error } = await supabase.from('tasks').update(updates).eq('id', id);
+      if (error) throw error;
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    } catch (err) { console.error(err); }
   };
 
   const deleteTask = async (id) => {
     if (isDemoMode || !user) {
-      const updated = tasks.filter(t => t.id !== id && t.parent_task_id !== id);
-      setTasks(updated);
+      setTasks(prev => prev.filter(t => t.id !== id && t.parent_task_id !== id));
       return;
     }
-    await supabase.from('tasks').delete().eq('id', id);
-    setTasks(prev => prev.filter(t => t.id !== id && t.parent_task_id !== id));
+    try {
+      const { error } = await supabase.from('tasks').delete().eq('id', id);
+      if (error) throw error;
+      setTasks(prev => prev.filter(t => t.id !== id && t.parent_task_id !== id));
+    } catch (err) { console.error(err); }
   };
 
   const toggleTask = async (id) => {
@@ -82,18 +96,26 @@ export function useTasks() {
   };
 
   const addProject = async (project) => {
-    const newProject = { ...project, id: crypto.randomUUID() };
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+    const newProject = { ...project, id };
     if (isDemoMode || !user) {
-      const updated = [...projects, newProject];
-      setProjects(updated);
+      setProjects(prev => [...prev, newProject]);
       return newProject;
     }
-    const { data } = await supabase.from('projects').insert({ ...project, user_id: user.id }).select().single();
-    setProjects(prev => [...prev, data]);
-    return data;
+    try {
+      const { data, error } = await supabase.from('projects').insert({ ...project, user_id: user.id }).select().single();
+      if (error) throw error;
+      if (data) {
+        setProjects(prev => [...prev, data]);
+        return data;
+      }
+    } catch (err) {
+      console.error('Error adding project:', err);
+      throw err;
+    }
   };
 
-  const getSubtasks = (parentId) => tasks.filter(t => t.parent_task_id === parentId);
+  const getSubtasks = (parentId) => (tasks || []).filter(t => t && t.parent_task_id === parentId);
 
-  return { tasks, projects, loading, addTask, updateTask, deleteTask, toggleTask, addProject, getSubtasks, refetch: fetchTasks };
+  return { tasks: tasks || [], projects: projects || [], loading, addTask, updateTask, deleteTask, toggleTask, addProject, getSubtasks, refetch: fetchTasks };
 }
