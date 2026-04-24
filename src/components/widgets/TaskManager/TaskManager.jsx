@@ -61,7 +61,7 @@ export default function TaskManager({ compact = false }) {
     if (filter === 'overdue') filteredTasks = rootTasks.filter(t => t && !t.is_completed && t.deadline && new Date(t.deadline) < new Date());
   }
 
-  const displayTasks = compact ? filteredTasks.slice(0, 5) : filteredTasks;
+  const displayTasks = filteredTasks;
   const totalCount = compact ? filteredTasks.length : allTasks.length;
   const completedCount = compact ? filteredTasks.filter(t => t && t.is_completed).length : allTasks.filter(t => t && t.is_completed).length;
 

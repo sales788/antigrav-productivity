@@ -81,7 +81,7 @@ export default function HabitTracker({ compact = false }) {
 
   if (loading) return <div className="card skeleton" style={{ height: 200 }} />;
 
-  const displayHabits = compact ? filteredHabits.slice(0, 5) : filteredHabits;
+  const displayHabits = filteredHabits;
   const days = [
     { id: 1, label: 'mon' }, { id: 2, label: 'tue' }, { id: 3, label: 'wed' },
     { id: 4, label: 'thu' }, { id: 5, label: 'fri' }, { id: 6, label: 'sat' }, { id: 0, label: 'sun' }
