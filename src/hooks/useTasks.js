@@ -46,9 +46,11 @@ export function useTasks() {
   const addTask = async (task) => {
     const newTask = { ...task, id: crypto.randomUUID(), is_completed: false, created_at: new Date().toISOString() };
     if (isDemoMode || !user) {
-      const updated = [...tasks, newTask];
-      setTasks(updated);
-      saveLocal(updated, projects);
+      setTasks(prev => {
+        const updated = [...prev, newTask];
+        saveLocal(updated, projects);
+        return updated;
+      });
       return newTask;
     }
     const { data } = await supabase.from('tasks').insert({ ...task, user_id: user.id }).select().single();

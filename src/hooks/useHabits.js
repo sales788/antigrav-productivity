@@ -42,9 +42,11 @@ export function useHabits() {
   const addHabit = async (habit) => {
     const newHabit = { ...habit, id: crypto.randomUUID(), streak: 0, created_at: new Date().toISOString() };
     if (isDemoMode || !user) {
-      const updated = [...habits, newHabit];
-      setHabits(updated);
-      saveLocal(updated);
+      setHabits(prev => {
+        const updated = [...prev, newHabit];
+        saveLocal(updated, habitLogs);
+        return updated;
+      });
       return newHabit;
     }
     const { data } = await supabase.from('habits').insert({ ...habit, user_id: user.id }).select().single();

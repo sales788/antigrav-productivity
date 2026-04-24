@@ -42,11 +42,15 @@ export default function HabitTracker({ compact = false }) {
   const completedCount = filteredHabits.filter(h => isHabitCompleted(h.id, targetDate)).length;
   const completionRate = filteredHabits.length > 0 ? Math.round((completedCount / filteredHabits.length) * 100) : 0;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newHabit.title.trim()) return;
-    addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
-    setNewHabit({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
-    setShowAdd(false);
+    try {
+      await addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
+      setNewHabit({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
+      setShowAdd(false);
+    } catch (e) {
+      console.error('Failed to add habit:', e);
+    }
   };
 
   const toggleDay = (day) => {
@@ -105,7 +109,7 @@ export default function HabitTracker({ compact = false }) {
               <button key={day.id} 
                 className={`day-btn ${newHabit.days_of_week.includes(day.id) ? 'active' : ''}`}
                 onClick={() => toggleDay(day.id)}>
-                {t(`daysShort.${day.label}`)}
+                {t(`daysShort.${day.label}`).charAt(0)}
               </button>
             ))}
           </div>
@@ -206,24 +210,26 @@ export default function HabitTracker({ compact = false }) {
         }
         .day-selector {
           display: flex;
-          justify-content: space-between;
-          gap: 4px;
-          margin-bottom: 8px;
+          justify-content: center;
+          gap: 6px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
         }
         .day-btn {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           border: 1px solid var(--border-color);
           background: var(--bg-card);
           color: var(--text-secondary);
-          font-size: 0.75rem;
-          font-weight: 600;
+          font-size: 0.85rem;
+          font-weight: 700;
           cursor: pointer;
           transition: all var(--transition-fast);
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
         .day-btn:hover {
           border-color: var(--primary-color);
@@ -233,6 +239,7 @@ export default function HabitTracker({ compact = false }) {
           background: var(--primary-color);
           color: white;
           border-color: var(--primary-color);
+          box-shadow: 0 4px 8px var(--primary-glow);
         }
         .habit-add-form {
           display: flex;

@@ -24,11 +24,15 @@ export default function TaskManager({ compact = false }) {
 
   const targetDate = getDate(viewDate);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newTask.title.trim()) return;
-    addTask({ ...newTask, parent_task_id: null });
-    setNewTask({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
-    setShowAdd(false);
+    try {
+      await addTask({ ...newTask, parent_task_id: null });
+      setNewTask({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
+      setShowAdd(false);
+    } catch (e) {
+      console.error('Failed to add task:', e);
+    }
   };
 
   if (loading) return <div className="card skeleton" style={{ height: 200 }} />;
