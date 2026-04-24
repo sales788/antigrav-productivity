@@ -15,6 +15,7 @@ export default function TaskManager({ compact = false }) {
   const [filter, setFilter] = useState('all');
   const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
 
   const getDate = (view) => {
@@ -33,13 +34,14 @@ export default function TaskManager({ compact = false }) {
     if (!newTask.title.trim() || submitting) return;
     
     setSubmitting(true);
+    setError(null);
     try {
       await addTask({ ...newTask, parent_task_id: null });
       setNewTask({ title: '', priority: 'medium', deadline: '', project_id: '', description: '' });
       setShowAdd(false);
     } catch (err) {
       console.error('Failed to add task:', err);
-      alert(t('common.error') || 'Failed to add task');
+      setError(t('common.error') || 'Failed to add task');
     } finally {
       setSubmitting(false);
     }
@@ -111,7 +113,8 @@ export default function TaskManager({ compact = false }) {
 
       {/* Add form */}
       {showAdd && (
-        <form className="task-add-form animate-slideUp" onSubmit={handleAdd}>
+        <form className="task-add-form animate-slideUp">
+          {error && <div className="error-message" style={{ color: '#ff6b6b', fontSize: '0.8rem', marginBottom: '8px', padding: '8px', background: 'rgba(255,107,107,0.1)', borderRadius: '4px' }}>{error}</div>}
           <input className="input" placeholder={t('tasks.name')} value={newTask.title}
             disabled={submitting}
             onChange={e => setNewTask({ ...newTask, title: e.target.value })}
@@ -127,7 +130,7 @@ export default function TaskManager({ compact = false }) {
             <input className="input" type="date" value={newTask.deadline}
               disabled={submitting}
               onChange={e => setNewTask({ ...newTask, deadline: e.target.value })} />
-            <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || !newTask.title.trim()}>
+            <button type="button" className="btn btn-primary btn-sm" disabled={submitting || !newTask.title.trim()} onClick={handleAdd}>
               {submitting ? '...' : t('common.add')}
             </button>
           </div>

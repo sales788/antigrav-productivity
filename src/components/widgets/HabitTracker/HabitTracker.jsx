@@ -18,6 +18,7 @@ export default function HabitTracker({ compact = false }) {
   const [showAdd, setShowAdd] = useState(false);
   const [newHabit, setNewHabit] = useState({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [viewDate, setViewDate] = useState('today'); // 'today' or 'tomorrow'
 
   const getDate = (view) => {
@@ -52,13 +53,17 @@ export default function HabitTracker({ compact = false }) {
     if (!newHabit.title.trim() || submitting) return;
     
     setSubmitting(true);
+    setError(null);
     try {
       await addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
       setNewHabit({ title: '', category: 'health', frequency: 'daily', days_of_week: [0,1,2,3,4,5,6] });
       setShowAdd(false);
     } catch (err) {
       console.error('Failed to add habit:', err);
-      alert(t('common.error') || 'Failed to add habit');
+      const msg = err.message?.includes('days_of_week') 
+        ? 'Ошибка базы данных: необходимо выполнить SQL-миграцию.'
+        : (t('common.error') || 'Failed to add habit');
+      setError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -111,7 +116,8 @@ export default function HabitTracker({ compact = false }) {
 
       {/* Add form */}
       {showAdd && (
-        <form className="habit-add-form animate-slideUp" onSubmit={handleAdd}>
+        <form className="habit-add-form animate-slideUp">
+          {error && <div className="error-message" style={{ color: '#ff6b6b', fontSize: '0.8rem', marginBottom: '8px', padding: '8px', background: 'rgba(255,107,107,0.1)', borderRadius: '4px' }}>{error}</div>}
           <input 
             className="input" 
             placeholder={t('habits.name')} 
@@ -140,7 +146,7 @@ export default function HabitTracker({ compact = false }) {
                 <option key={cat} value={cat}>{CATEGORY_EMOJIS[cat]} {t(`habits.categories.${cat}`)}</option>
               ))}
             </select>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={submitting || !newHabit.title.trim()}>
+            <button type="button" className="btn btn-primary btn-sm" disabled={submitting || !newHabit.title.trim()} onClick={handleAdd}>
               {submitting ? '...' : t('common.add')}
             </button>
           </div>

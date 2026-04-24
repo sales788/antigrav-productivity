@@ -17,17 +17,38 @@ export function useHabits() {
 
   const fetchHabits = useCallback(async () => {
     if (isDemoMode || !user) {
-      setHabits(JSON.parse(localStorage.getItem('antigrav-habits') || 'null') || DEMO_HABITS);
-      setHabitLogs(JSON.parse(localStorage.getItem('antigrav-habit-logs') || '[]'));
+      try {
+        const storedHabits = localStorage.getItem('antigrav-habits');
+        const storedLogs = localStorage.getItem('antigrav-habit-logs');
+        
+        let h = DEMO_HABITS;
+        if (storedHabits && storedHabits !== 'undefined') {
+          const parsed = JSON.parse(storedHabits);
+          if (Array.isArray(parsed)) h = parsed;
+        }
+        
+        let l = [];
+        if (storedLogs && storedLogs !== 'undefined') {
+          const parsed = JSON.parse(storedLogs);
+          if (Array.isArray(parsed)) l = parsed;
+        }
+        
+        setHabits(h.filter(Boolean));
+        setHabitLogs(l.filter(Boolean));
+      } catch (e) {
+        console.error('Error loading habits from localStorage:', e);
+        setHabits(DEMO_HABITS);
+        setHabitLogs([]);
+      }
       setLoading(false);
       return;
     }
     try {
       const { data } = await supabase.from('habits').select('*').eq('user_id', user.id).order('created_at');
-      setHabits(data || []);
+      setHabits((data || []).filter(Boolean));
       const { data: logs } = await supabase.from('habit_logs').select('*')
         .in('habit_id', (data || []).map(h => h.id));
-      setHabitLogs(logs || []);
+      setHabitLogs((logs || []).filter(Boolean));
     } catch (e) { console.error(e); }
     setLoading(false);
   }, [user]);
@@ -36,11 +57,11 @@ export function useHabits() {
 
   // Sync to localStorage
   useEffect(() => {
-    if (isDemoMode || !user) {
+    if (!loading && (isDemoMode || !user)) {
       localStorage.setItem('antigrav-habits', JSON.stringify(habits));
       localStorage.setItem('antigrav-habit-logs', JSON.stringify(habitLogs));
     }
-  }, [habits, habitLogs, user]);
+  }, [habits, habitLogs, user, loading]);
 
   const addHabit = async (habit) => {
     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
@@ -52,14 +73,28 @@ export function useHabits() {
     }
     
     try {
-      const { data, error } = await supabase.from('habits').insert({ ...habit, user_id: user.id }).select().single();
-      if (error) throw error;
+      const payload = { 
+        title: habit.title,
+        category: habit.category,
+        frequency: habit.frequency || 'daily',
+        color: habit.color,
+        days_of_week: habit.days_of_week,
+        user_id: user.id 
+      };
+      
+      const { data, error } = await supabase.from('habits').insert(payload).select().single();
+      
+      if (error) {
+        console.error('Supabase error adding habit:', error);
+        throw error;
+      }
+      
       if (data) {
         setHabits(prev => [...prev, data]);
         return data;
       }
     } catch (err) {
-      console.error('Error adding habit:', err);
+      console.error('Failed to add habit:', err);
       throw err;
     }
   };

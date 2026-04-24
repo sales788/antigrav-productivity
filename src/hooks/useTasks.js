@@ -22,16 +22,37 @@ export function useTasks() {
 
   const fetchTasks = useCallback(async () => {
     if (isDemoMode || !user) {
-      setTasks(JSON.parse(localStorage.getItem('antigrav-tasks') || 'null') || DEMO_TASKS);
-      setProjects(JSON.parse(localStorage.getItem('antigrav-projects') || 'null') || DEMO_PROJECTS);
+      try {
+        const storedTasks = localStorage.getItem('antigrav-tasks');
+        const storedProjects = localStorage.getItem('antigrav-projects');
+        
+        let t = DEMO_TASKS;
+        if (storedTasks && storedTasks !== 'undefined') {
+          const parsed = JSON.parse(storedTasks);
+          if (Array.isArray(parsed)) t = parsed;
+        }
+        
+        let p = DEMO_PROJECTS;
+        if (storedProjects && storedProjects !== 'undefined') {
+          const parsed = JSON.parse(storedProjects);
+          if (Array.isArray(parsed)) p = parsed;
+        }
+        
+        setTasks(t.filter(Boolean));
+        setProjects(p.filter(Boolean));
+      } catch (e) {
+        console.error('Error loading tasks from localStorage:', e);
+        setTasks(DEMO_TASKS);
+        setProjects(DEMO_PROJECTS);
+      }
       setLoading(false);
       return;
     }
     try {
       const { data: t } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('created_at');
-      setTasks(t || []);
+      setTasks((t || []).filter(Boolean));
       const { data: p } = await supabase.from('projects').select('*').eq('user_id', user.id);
-      setProjects(p || []);
+      setProjects((p || []).filter(Boolean));
     } catch (e) { console.error(e); }
     setLoading(false);
   }, [user]);
@@ -40,11 +61,11 @@ export function useTasks() {
 
   // Sync to localStorage
   useEffect(() => {
-    if (isDemoMode || !user) {
+    if (!loading && (isDemoMode || !user)) {
       localStorage.setItem('antigrav-tasks', JSON.stringify(tasks));
       localStorage.setItem('antigrav-projects', JSON.stringify(projects));
     }
-  }, [tasks, projects, user]);
+  }, [tasks, projects, user, loading]);
 
   const addTask = async (task) => {
     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
@@ -54,7 +75,17 @@ export function useTasks() {
       return newTask;
     }
     try {
-      const { data, error } = await supabase.from('tasks').insert({ ...task, user_id: user.id }).select().single();
+      // Clean up payload: convert empty strings to null for UUID and DATE fields
+      const taskToInsert = { 
+        ...task, 
+        user_id: user.id,
+        is_completed: task.is_completed || false,
+        project_id: task.project_id || null,
+        deadline: task.deadline || null,
+        parent_task_id: task.parent_task_id || null
+      };
+      
+      const { data, error } = await supabase.from('tasks').insert(taskToInsert).select().single();
       if (error) throw error;
       if (data) {
         setTasks(prev => [...prev, data]);

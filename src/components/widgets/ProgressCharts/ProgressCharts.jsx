@@ -11,7 +11,7 @@ export default function ProgressCharts({ compact = false }) {
   const { tasks } = useTasks();
 
   // Habit completion by category
-  const categoryData = habits.reduce((acc, h) => {
+  const categoryData = habits.filter(Boolean).reduce((acc, h) => {
     const cat = h.category || 'other';
     if (!acc[cat]) acc[cat] = { name: t(`habits.categories.${cat}`), value: 0 };
     acc[cat].value++;
@@ -21,9 +21,9 @@ export default function ProgressCharts({ compact = false }) {
 
   // Task priority distribution
   const priorityData = [
-    { name: t('tasks.high'), value: tasks.filter(t => t.priority === 'high').length, fill: '#ff6b6b' },
-    { name: t('tasks.medium'), value: tasks.filter(t => t.priority === 'medium').length, fill: '#ffa726' },
-    { name: t('tasks.low'), value: tasks.filter(t => t.priority === 'low').length, fill: '#00d4aa' },
+    { name: t('tasks.high'), value: tasks.filter(t => t && t.priority === 'high').length, fill: '#ff6b6b' },
+    { name: t('tasks.medium'), value: tasks.filter(t => t && t.priority === 'medium').length, fill: '#ffa726' },
+    { name: t('tasks.low'), value: tasks.filter(t => t && t.priority === 'low').length, fill: '#00d4aa' },
   ].filter(d => d.value > 0);
 
   // Weekly activity (last 7 days)
@@ -33,15 +33,15 @@ export default function ProgressCharts({ compact = false }) {
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split('T')[0];
     const dayName = date.toLocaleDateString(undefined, { weekday: 'short' });
-    const habitsCompleted = habitLogs.filter(l => l.completed_at?.startsWith(dateStr)).length;
+    const habitsCompleted = habitLogs.filter(l => l && l.completed_at?.startsWith(dateStr)).length;
     weekData.push({ name: dayName, habits: habitsCompleted, tasks: Math.floor(Math.random() * 3) + 1 });
   }
 
   // Stats
-  const totalHabits = habits.length;
-  const completedTasks = tasks.filter(t => t.is_completed).length;
-  const pendingTasks = tasks.filter(t => !t.is_completed).length;
-  const bestStreak = Math.max(...habits.map(h => h.streak || 0), 0);
+  const totalHabits = (habits || []).filter(Boolean).length;
+  const completedTasks = (tasks || []).filter(t => t && t.is_completed).length;
+  const pendingTasks = (tasks || []).filter(t => t && !t.is_completed).length;
+  const bestStreak = Math.max(...(habits || []).filter(Boolean).map(h => h.streak || 0), 0);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload) return null;
