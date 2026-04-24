@@ -24,7 +24,8 @@ export default function TaskManager({ compact = false }) {
 
   const targetDate = getDate(viewDate);
 
-  const handleAdd = async () => {
+  const handleAdd = async (e) => {
+    if (e) e.preventDefault();
     if (!newTask.title.trim()) return;
     try {
       await addTask({ ...newTask, parent_task_id: null });
@@ -69,16 +70,16 @@ export default function TaskManager({ compact = false }) {
         <span className="icon">✅</span>
         {t('tasks.title')}
         <span className="task-count-badge">{completedCount}/{totalCount}</span>
-        <button className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
+        <button type="button" className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
       </div>
 
       {/* Date Toggle for Dashboard */}
       {compact && (
         <div className="task-date-toggle">
-          <button className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
+          <button type="button" className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
             {t('common.today')}
           </button>
-          <button className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
+          <button type="button" className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
             {t('tomorrow')}
           </button>
         </div>
@@ -88,7 +89,7 @@ export default function TaskManager({ compact = false }) {
       {!compact && (
         <div className="tabs" style={{ marginBottom: 16 }}>
           {['all', 'pending', 'completed', 'overdue'].map(f => (
-            <button key={f} className={`tab ${filter === f ? 'active' : ''}`}
+            <button key={f} type="button" className={`tab ${filter === f ? 'active' : ''}`}
               onClick={() => setFilter(f)}>
               {f === 'all' ? '📋' : f === 'pending' ? '⏳' : f === 'completed' ? '✅' : '⚠️'} {t(`tasks.${f === 'all' ? 'title' : f}`)}
             </button>
@@ -101,7 +102,7 @@ export default function TaskManager({ compact = false }) {
         <div className="task-add-form animate-slideUp">
           <input className="input" placeholder={t('tasks.name')} value={newTask.title}
             onChange={e => setNewTask({ ...newTask, title: e.target.value })}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()} />
+            onKeyDown={e => e.key === 'Enter' && handleAdd(e)} />
           <div className="task-add-row">
             <select className="input select" value={newTask.priority}
               onChange={e => setNewTask({ ...newTask, priority: e.target.value })}>
@@ -111,7 +112,7 @@ export default function TaskManager({ compact = false }) {
             </select>
             <input className="input" type="date" value={newTask.deadline}
               onChange={e => setNewTask({ ...newTask, deadline: e.target.value })} />
-            <button className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
+            <button type="button" className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
           </div>
         </div>
       )}
@@ -149,7 +150,7 @@ export default function TaskManager({ compact = false }) {
                 </div>
               </div>
               {!compact && (
-                <button className="btn btn-ghost btn-sm" onClick={() => deleteTask(task.id)}>✕</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => deleteTask(task.id)}>✕</button>
               )}
             </div>
           );

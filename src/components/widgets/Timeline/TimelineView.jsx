@@ -87,6 +87,7 @@ export default function TimelineView() {
           const count = getTaskCount(p.id);
           return (
             <button 
+              type="button"
               key={p.id} 
               className={`period-tab ${period === p.id ? 'active' : ''}`}
               onClick={() => setPeriod(p.id)}

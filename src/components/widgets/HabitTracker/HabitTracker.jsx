@@ -42,7 +42,8 @@ export default function HabitTracker({ compact = false }) {
   const completedCount = filteredHabits.filter(h => isHabitCompleted(h.id, targetDate)).length;
   const completionRate = filteredHabits.length > 0 ? Math.round((completedCount / filteredHabits.length) * 100) : 0;
 
-  const handleAdd = async () => {
+  const handleAdd = async (e) => {
+    if (e) e.preventDefault();
     if (!newHabit.title.trim()) return;
     try {
       await addHabit({ ...newHabit, color: CATEGORY_COLORS[newHabit.category] });
@@ -53,7 +54,8 @@ export default function HabitTracker({ compact = false }) {
     }
   };
 
-  const toggleDay = (day) => {
+  const toggleDay = (day, e) => {
+    if (e) e.preventDefault();
     const current = newHabit.days_of_week || [];
     if (current.includes(day)) {
       setNewHabit({ ...newHabit, days_of_week: current.filter(d => d !== day) });
@@ -76,16 +78,16 @@ export default function HabitTracker({ compact = false }) {
         <span className="icon">🔄</span>
         {t('habits.title')}
         <span className="habit-progress-badge">{completionRate}%</span>
-        <button className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
+        <button type="button" className="btn btn-sm btn-primary" style={{ marginLeft: 'auto' }} onClick={() => setShowAdd(!showAdd)}>+ {t('common.add')}</button>
       </div>
 
       {/* Date Toggle for Dashboard */}
       {compact && (
         <div className="habit-date-toggle">
-          <button className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
+          <button type="button" className={`date-btn ${viewDate === 'today' ? 'active' : ''}`} onClick={() => setViewDate('today')}>
             {t('common.today')}
           </button>
-          <button className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
+          <button type="button" className={`date-btn ${viewDate === 'tomorrow' ? 'active' : ''}`} onClick={() => setViewDate('tomorrow')}>
             {t('tomorrow')}
           </button>
         </div>
@@ -102,13 +104,14 @@ export default function HabitTracker({ compact = false }) {
         <div className="habit-add-form animate-slideUp">
           <input className="input" placeholder={t('habits.name')} value={newHabit.title}
             onChange={e => setNewHabit({ ...newHabit, title: e.target.value })}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()} />
+            onKeyDown={e => e.key === 'Enter' && handleAdd(e)} />
           
           <div className="day-selector">
             {days.map(day => (
               <button key={day.id} 
+                type="button"
                 className={`day-btn ${newHabit.days_of_week.includes(day.id) ? 'active' : ''}`}
-                onClick={() => toggleDay(day.id)}>
+                onClick={(e) => toggleDay(day.id, e)}>
                 {t(`daysShort.${day.label}`).charAt(0)}
               </button>
             ))}
@@ -121,7 +124,7 @@ export default function HabitTracker({ compact = false }) {
                 <option key={cat} value={cat}>{CATEGORY_EMOJIS[cat]} {t(`habits.categories.${cat}`)}</option>
               ))}
             </select>
-            <button className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
+            <button type="button" className="btn btn-primary btn-sm" onClick={handleAdd}>{t('common.add')}</button>
           </div>
         </div>
       )}
@@ -147,7 +150,7 @@ export default function HabitTracker({ compact = false }) {
                 </span>
               </div>
               {!compact && (
-                <button className="btn btn-ghost btn-sm" onClick={() => deleteHabit(habit.id)}>✕</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => deleteHabit(habit.id)}>✕</button>
               )}
             </div>
           );

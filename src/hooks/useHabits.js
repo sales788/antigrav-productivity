@@ -34,19 +34,18 @@ export function useHabits() {
 
   useEffect(() => { fetchHabits(); }, [fetchHabits]);
 
-  const saveLocal = (h, l) => {
-    localStorage.setItem('antigrav-habits', JSON.stringify(h));
-    if (l) localStorage.setItem('antigrav-habit-logs', JSON.stringify(l));
-  };
+  // Sync to localStorage
+  useEffect(() => {
+    if (isDemoMode || !user) {
+      localStorage.setItem('antigrav-habits', JSON.stringify(habits));
+      localStorage.setItem('antigrav-habit-logs', JSON.stringify(habitLogs));
+    }
+  }, [habits, habitLogs, user]);
 
   const addHabit = async (habit) => {
     const newHabit = { ...habit, id: crypto.randomUUID(), streak: 0, created_at: new Date().toISOString() };
     if (isDemoMode || !user) {
-      setHabits(prev => {
-        const updated = [...prev, newHabit];
-        saveLocal(updated, habitLogs);
-        return updated;
-      });
+      setHabits(prev => [...prev, newHabit]);
       return newHabit;
     }
     const { data } = await supabase.from('habits').insert({ ...habit, user_id: user.id }).select().single();
@@ -56,9 +55,7 @@ export function useHabits() {
 
   const updateHabit = async (id, updates) => {
     if (isDemoMode || !user) {
-      const updated = habits.map(h => h.id === id ? { ...h, ...updates } : h);
-      setHabits(updated);
-      saveLocal(updated);
+      setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
       return;
     }
     await supabase.from('habits').update(updates).eq('id', id);
@@ -67,9 +64,7 @@ export function useHabits() {
 
   const deleteHabit = async (id) => {
     if (isDemoMode || !user) {
-      const updated = habits.filter(h => h.id !== id);
-      setHabits(updated);
-      saveLocal(updated);
+      setHabits(prev => prev.filter(h => h.id !== id));
       return;
     }
     await supabase.from('habits').delete().eq('id', id);
@@ -84,7 +79,6 @@ export function useHabits() {
       if (isDemoMode || !user) {
         const updated = habitLogs.filter(l => l.id !== existing.id);
         setHabitLogs(updated);
-        saveLocal(habits, updated);
         return;
       }
       await supabase.from('habit_logs').delete().eq('id', existing.id);
@@ -94,7 +88,6 @@ export function useHabits() {
       if (isDemoMode || !user) {
         const updated = [...habitLogs, newLog];
         setHabitLogs(updated);
-        saveLocal(habits, updated);
         return;
       }
       const { data } = await supabase.from('habit_logs').insert({ habit_id: habitId, completed_at: dateStr }).select().single();

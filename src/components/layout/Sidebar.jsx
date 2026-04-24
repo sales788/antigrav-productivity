@@ -37,8 +37,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <button className="logout-btn" onClick={() => signOut()}>
-          <span>🚪</span> {t('auth.signOut')}
+        <button type="button" className="logout-btn" onClick={() => signOut()}>
+          <span className="logout-icon">🚪</span> {t('auth.signOut')}
         </button>
       </div>
 
@@ -113,18 +113,23 @@ export default function Sidebar() {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px;
-          background: none;
-          border: none;
+          padding: 12px 16px;
+          background: rgba(255, 75, 92, 0.05);
+          border: 1px solid rgba(255, 75, 92, 0.1);
           color: var(--danger);
           cursor: pointer;
-          font-size: 1rem;
-          font-weight: 500;
-          transition: var(--transition-fast);
-          border-radius: var(--radius-sm);
+          font-size: 0.95rem;
+          font-weight: 600;
+          transition: all 0.2s;
+          border-radius: var(--radius-md);
         }
         .logout-btn:hover {
           background: rgba(255, 75, 92, 0.1);
+          border-color: rgba(255, 75, 92, 0.2);
+          transform: translateY(-1px);
+        }
+        .logout-icon {
+          font-size: 1.1rem;
         }
 
         @media (max-width: 768px) {

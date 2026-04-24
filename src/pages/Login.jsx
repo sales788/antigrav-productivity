@@ -55,7 +55,7 @@ export default function Login() {
         </form>
 
         {isDemoMode && (
-          <button className="btn btn-secondary" onClick={handleDemo} style={{ width: '100%', marginTop: 12 }}>
+          <button type="button" className="btn btn-secondary" onClick={handleDemo} style={{ width: '100%', marginTop: 12 }}>
             🚀 Demo Mode
           </button>
         )}

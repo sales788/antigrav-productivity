@@ -34,7 +34,7 @@ export default function AIRecommendations() {
       {!recommendations && !loading && (
         <div className="ai-prompt">
           <p className="ai-description">{t('ai.subtitle')}</p>
-          <button className="btn btn-primary" onClick={generate} style={{ width: '100%' }}>
+          <button type="button" className="btn btn-primary" onClick={generate} style={{ width: '100%' }}>
             ✨ {t('ai.generate')}
           </button>
         </div>
@@ -59,7 +59,7 @@ export default function AIRecommendations() {
               <div className="ai-rec-desc">{rec.description}</div>
             </div>
           ))}
-          <button className="btn btn-secondary btn-sm" onClick={generate} style={{ marginTop: 8 }}>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={generate} style={{ marginTop: 8 }}>
             🔄 {t('ai.generate')}
           </button>
         </div>

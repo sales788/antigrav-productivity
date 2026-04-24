@@ -37,20 +37,20 @@ export default function Settings() {
         <div className="card animate-fadeInUp">
           <div className="card-title"><span className="icon">🎨</span> {t('settings.theme')}</div>
           <div className="settings-toggle-group">
-            <button className={`settings-toggle ${theme === 'dark' ? 'active' : ''}`} onClick={() => theme !== 'dark' && toggleTheme()}>
+            <button type="button" className={`settings-toggle ${theme === 'dark' ? 'active' : ''}`} onClick={() => theme !== 'dark' && toggleTheme()}>
               🌙 {t('settings.dark')}
             </button>
-            <button className={`settings-toggle ${theme === 'light' ? 'active' : ''}`} onClick={() => theme !== 'light' && toggleTheme()}>
+            <button type="button" className={`settings-toggle ${theme === 'light' ? 'active' : ''}`} onClick={() => theme !== 'light' && toggleTheme()}>
               ☀️ {t('settings.light')}
             </button>
           </div>
 
           <div className="card-title" style={{ marginTop: 20 }}><span className="icon">🌐</span> {t('settings.language')}</div>
           <div className="settings-toggle-group">
-            <button className={`settings-toggle ${i18n.language === 'en' ? 'active' : ''}`} onClick={() => i18n.changeLanguage('en')}>
+            <button type="button" className={`settings-toggle ${i18n.language === 'en' ? 'active' : ''}`} onClick={() => i18n.changeLanguage('en')}>
               🇬🇧 English
             </button>
-            <button className={`settings-toggle ${i18n.language === 'ru' ? 'active' : ''}`} onClick={() => i18n.changeLanguage('ru')}>
+            <button type="button" className={`settings-toggle ${i18n.language === 'ru' ? 'active' : ''}`} onClick={() => i18n.changeLanguage('ru')}>
               🇷🇺 Русский
             </button>
           </div>
@@ -69,7 +69,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={handleSave}>
+      <button type="button" className="btn btn-primary" style={{ marginTop: 20 }} onClick={handleSave}>
         {saved ? `✓ ${t('settings.saved')}` : t('settings.save')}
       </button>
 

@@ -38,19 +38,18 @@ export function useTasks() {
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
-  const saveLocal = (t, p) => {
-    localStorage.setItem('antigrav-tasks', JSON.stringify(t));
-    if (p) localStorage.setItem('antigrav-projects', JSON.stringify(p));
-  };
+  // Sync to localStorage
+  useEffect(() => {
+    if (isDemoMode || !user) {
+      localStorage.setItem('antigrav-tasks', JSON.stringify(tasks));
+      localStorage.setItem('antigrav-projects', JSON.stringify(projects));
+    }
+  }, [tasks, projects, user]);
 
   const addTask = async (task) => {
     const newTask = { ...task, id: crypto.randomUUID(), is_completed: false, created_at: new Date().toISOString() };
     if (isDemoMode || !user) {
-      setTasks(prev => {
-        const updated = [...prev, newTask];
-        saveLocal(updated, projects);
-        return updated;
-      });
+      setTasks(prev => [...prev, newTask]);
       return newTask;
     }
     const { data } = await supabase.from('tasks').insert({ ...task, user_id: user.id }).select().single();
@@ -60,9 +59,7 @@ export function useTasks() {
 
   const updateTask = async (id, updates) => {
     if (isDemoMode || !user) {
-      const updated = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
-      setTasks(updated);
-      saveLocal(updated, projects);
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
       return;
     }
     await supabase.from('tasks').update(updates).eq('id', id);
@@ -73,7 +70,6 @@ export function useTasks() {
     if (isDemoMode || !user) {
       const updated = tasks.filter(t => t.id !== id && t.parent_task_id !== id);
       setTasks(updated);
-      saveLocal(updated, projects);
       return;
     }
     await supabase.from('tasks').delete().eq('id', id);
@@ -90,7 +86,6 @@ export function useTasks() {
     if (isDemoMode || !user) {
       const updated = [...projects, newProject];
       setProjects(updated);
-      saveLocal(tasks, updated);
       return newProject;
     }
     const { data } = await supabase.from('projects').insert({ ...project, user_id: user.id }).select().single();

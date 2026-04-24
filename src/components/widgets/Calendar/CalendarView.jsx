@@ -34,11 +34,11 @@ export default function CalendarView() {
   return (
     <div className="calendar-view card animate-fadeIn">
       <div className="calendar-header">
-        <button className="nav-btn" onClick={prevMonth}>‹</button>
+        <button type="button" className="nav-btn" onClick={prevMonth}>‹</button>
         <h2 className="month-year">
           {new Intl.DateTimeFormat('default', { month: 'long', year: 'numeric' }).format(currentDate)}
         </h2>
-        <button className="nav-btn" onClick={nextMonth}>›</button>
+        <button type="button" className="nav-btn" onClick={nextMonth}>›</button>
       </div>
 
       <div className="calendar-grid">

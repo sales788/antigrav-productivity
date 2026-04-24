@@ -6,7 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 export default function Header() {
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   const toggleLanguage = () => {
@@ -51,11 +51,14 @@ export default function Header() {
       </div>
 
       <div className="header-actions">
-        <button className="lang-btn" onClick={toggleLanguage}>
+        <button type="button" className="lang-btn" onClick={toggleLanguage}>
           {i18n.language === 'ru' ? 'RU' : 'EN'}
         </button>
-        <button className="theme-toggle" onClick={toggleTheme}>
+        <button type="button" className="theme-toggle" onClick={toggleTheme}>
           {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+        <button className="logout-btn-header" onClick={signOut} title={t('auth.signOut')}>
+          🚪
         </button>
       </div>
 
@@ -96,6 +99,26 @@ export default function Header() {
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .logout-btn-header {
+          background: rgba(255, 75, 92, 0.1);
+          border: 1px solid rgba(255, 75, 92, 0.2);
+          color: var(--danger);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          transition: all 0.2s;
+        }
+
+        .logout-btn-header:hover {
+          background: rgba(255, 75, 92, 0.2);
+          transform: scale(1.05);
         }
 
         @media (max-width: 768px) {

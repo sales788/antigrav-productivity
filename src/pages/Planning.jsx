@@ -16,12 +16,14 @@ export default function Planning() {
         </div>
         <div className="view-toggle glass">
           <button 
+            type="button"
             className={`toggle-btn ${view === 'timeline' ? 'active' : ''}`}
             onClick={() => setView('timeline')}
           >
             🕒 {t('analytics.week')}
           </button>
           <button 
+            type="button"
             className={`toggle-btn ${view === 'calendar' ? 'active' : ''}`}
             onClick={() => setView('calendar')}
           >
